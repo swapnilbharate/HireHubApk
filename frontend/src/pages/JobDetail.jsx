@@ -127,7 +127,7 @@ export default function JobDetail() {
             {/* Quick Tags Bar */}
             <div className="d-flex flex-wrap gap-3 px-4 py-3" style={{ borderBottom: '1px solid var(--border-light)', backgroundColor: 'var(--bg-section)' }}>
               <span className="d-flex align-items-center gap-1 text-muted fs-7">
-                <Briefcase size={14} className="text-primary" /> {job.jobType.replace('_', ' ')}
+                <Briefcase size={14} className="text-primary" /> {job.jobType?.replace('_', ' ')}
               </span>
               <span className="d-flex align-items-center gap-1 text-muted fs-7">
                 <MapPin size={14} className="text-primary" /> {job.location}
@@ -216,7 +216,7 @@ export default function JobDetail() {
                 <Briefcase size={18} className="text-primary mt-1 flex-shrink-0" />
                 <div>
                   <div className="fw-semibold text-dark fs-7">Job Type</div>
-                  <div className="text-muted fs-7">{job.jobType.replace('_', ' ')}</div>
+                  <div className="text-muted fs-7">{job.jobType?.replace('_', ' ')}</div>
                 </div>
               </li>
               <li className="mb-3 d-flex align-items-start gap-3 pb-3" style={{ borderBottom: '1px solid var(--border-light)' }}>
