@@ -127,6 +127,20 @@ export default function Register() {
           </div>
 
           <div className="mb-3">
+            <label className="form-label text-muted fs-7">Phone Number</label>
+            <div className="input-group">
+              <span className="input-group-text bg-light text-muted" style={{ border: '1px solid var(--border-light)' }}><Phone size={16} /></span>
+              <input
+                type="text"
+                className="form-control input-main"
+                placeholder="+1 (555) 123-4567"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+              />
+            </div>
+          </div>
+
+          <div className="mb-3">
             <label className="form-label text-muted fs-7">Email Address</label>
             <div className="input-group">
               <span className="input-group-text bg-light text-muted" style={{ border: '1px solid var(--border-light)' }}><Mail size={16} /></span>
@@ -138,20 +152,6 @@ export default function Register() {
                 onChange={(e) => setEmail(e.target.value)}
                 autoComplete="off"
                 required
-              />
-            </div>
-          </div>
-
-          <div className="mb-3">
-            <label className="form-label text-muted fs-7">Phone Number</label>
-            <div className="input-group">
-              <span className="input-group-text bg-light text-muted" style={{ border: '1px solid var(--border-light)' }}><Phone size={16} /></span>
-              <input
-                type="text"
-                className="form-control input-main"
-                placeholder="+1 (555) 123-4567"
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
               />
             </div>
           </div>
