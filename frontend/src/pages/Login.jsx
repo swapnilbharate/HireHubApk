@@ -15,19 +15,7 @@ export default function Login() {
   const [error, setError] = useState('')
   const [submitting, setSubmitting] = useState(false)
 
-  // Load saved credentials on page load
-  useEffect(() => {
-    const savedEmail = localStorage.getItem('hirehub_saved_email')
-    const savedPassword = localStorage.getItem('hirehub_saved_password')
-    const savedRemember = localStorage.getItem('hirehub_saved_remember')
-    
-    if (savedRemember === 'true') {
-      if (savedEmail) setEmail(savedEmail)
-      if (savedPassword) setPassword(savedPassword)
-      setRememberMe(true)
-    }
-  }, [])
-
+  // Browser will handle autofill naturally
   const handleSubmit = async (e) => {
     e.preventDefault()
     setError('')
@@ -35,16 +23,6 @@ export default function Login() {
 
     try {
       const res = await axios.post('/api/auth/login', { email, password })
-
-      if (rememberMe) {
-        localStorage.setItem('hirehub_saved_email', email)
-        localStorage.setItem('hirehub_saved_password', password)
-        localStorage.setItem('hirehub_saved_remember', 'true')
-      } else {
-        localStorage.removeItem('hirehub_saved_email')
-        localStorage.removeItem('hirehub_saved_password')
-        localStorage.removeItem('hirehub_saved_remember')
-      }
 
       login(
         { 
@@ -129,18 +107,6 @@ export default function Login() {
             </div>
           </div>
 
-          <div className="mb-4 form-check">
-            <input 
-              type="checkbox" 
-              className="form-check-input" 
-              id="rememberMe" 
-              checked={rememberMe}
-              onChange={(e) => setRememberMe(e.target.checked)}
-            />
-            <label className="form-check-label text-muted fs-7" htmlFor="rememberMe">
-              Remember me
-            </label>
-          </div>
 
           <button type="submit" className="btn btn-grad-primary w-100 py-2 mb-3" disabled={submitting}>
             {submitting ? 'Authenticating...' : 'Sign In'}

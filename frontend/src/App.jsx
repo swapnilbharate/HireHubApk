@@ -73,8 +73,13 @@ export default function App() {
       (error) => {
         if (error.response && (error.response.status === 401 || error.response.status === 403)) {
           const url = error.config?.url || '';
+          const currentPath = window.location.pathname;
           // Do not trigger session expired alert for login or register failures
-          if (!url.includes('/api/auth/login') && !url.includes('/api/auth/register')) {
+          // Also, do not trigger if the user is already on the login or register page
+          if (!url.includes('/api/auth/login') && 
+              !url.includes('/api/auth/register') &&
+              currentPath !== '/login' && 
+              currentPath !== '/register') {
             if (!isLoggingOut.current) {
               isLoggingOut.current = true
               logout();
