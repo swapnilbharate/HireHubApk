@@ -225,16 +225,16 @@ export default function JobSeekerDashboard() {
                   <div className="card-main p-4 bg-white shadow-sm card-hover-border">
                     <div className="d-flex justify-content-between align-items-start flex-wrap gap-2">
                       <div>
-                        <h5 className="mb-1 fw-bold text-dark">{app.job.title}</h5>
+                        <h5 className="mb-1 fw-bold text-dark">{app.job?.title || 'Unknown Job'}</h5>
                         <p className="text-primary mb-2 fw-medium">
-                          <Link to={`/companies/${app.job.company.id}`} className="text-primary text-decoration-none">{app.job.company.name}</Link> — <span className="text-muted fs-7">{app.job.location}</span>
+                          {app.job?.company ? <Link to={`/companies/${app.job.company.id}`} className="text-primary text-decoration-none">{app.job.company.name}</Link> : 'Unknown Company'} — <span className="text-muted fs-7">{app.job?.location || 'Unknown Location'}</span>
                         </p>
                         <p className="text-muted fs-8 mb-0">Applied at: {new Date(app.appliedAt || Date.now()).toLocaleDateString()}</p>
                       </div>
                       
                       <div className="text-md-end">
                         <span className={`badge-status ${getStatusBadgeClass(app.status)} mb-2 d-inline-block`}>
-                          {app.status.replace('_', ' ')}
+                          {app.status?.replace('_', ' ') || 'APPLIED'}
                         </span>
                         <div className="text-muted fs-8">ATS Match: <strong className="text-dark">{app.score}%</strong></div>
                       </div>
