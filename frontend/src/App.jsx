@@ -72,13 +72,15 @@ export default function App() {
       (response) => response,
       (error) => {
         if (error.response && (error.response.status === 401 || error.response.status === 403)) {
-          // Only show alert and logout once (prevents duplicate popups on multiple API calls)
-          if (!isLoggingOut.current) {
-            isLoggingOut.current = true
-            logout();
-            alert("Your session has expired or is invalid. Please log in again.");
-            // Reset the flag after a short delay so future logouts work
-            setTimeout(() => { isLoggingOut.current = false }, 2000)
+          const url = error.config?.url || '';
+          // Do not trigger session expired alert for login or register failures
+          if (!url.includes('/api/auth/login') && !url.includes('/api/auth/register')) {
+            if (!isLoggingOut.current) {
+              isLoggingOut.current = true
+              logout();
+              alert("Your session has expired or is invalid. Please log in again.");
+              setTimeout(() => { isLoggingOut.current = false }, 2000)
+            }
           }
         }
         return Promise.reject(error);
