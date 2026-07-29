@@ -79,6 +79,7 @@ public class AuthController {
                     user.getStatus()
             ));
         } catch (Exception ex) {
+            ex.printStackTrace(); // LOG THE ERROR
             Map<String, Object> err = new HashMap<>();
             err.put("success", false);
             err.put("message", "Invalid email or password.");
