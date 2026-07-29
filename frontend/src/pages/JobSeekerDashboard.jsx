@@ -227,7 +227,7 @@ export default function JobSeekerDashboard() {
                       <div>
                         <h5 className="mb-1 fw-bold text-dark">{app.job.title}</h5>
                         <p className="text-primary mb-2 fw-medium">
-                          <Link to={`/companies/${app.job.company.id}`} className="text-primary text-decoration-none">{app.job.company.name}</Link> — <span className="text-muted fs-7">{app.job.location}</span>
+                          <Link to={`/companies/${app.job?.company?.id}`} className="text-primary text-decoration-none">{app.job?.company?.name}</Link> — <span className="text-muted fs-7">{app.job?.location}</span>
                         </p>
                         <p className="text-muted fs-8 mb-0">Applied at: {new Date(app.appliedAt || Date.now()).toLocaleDateString()}</p>
                       </div>
@@ -279,8 +279,8 @@ export default function JobSeekerDashboard() {
                     </button>
                     <div>
                       <h5 className="text-dark fw-bold mb-1">{job.title}</h5>
-                      <span className="text-primary fw-medium fs-7">{job.company.name}</span>
-                      <p className="text-muted fs-8 mt-2"><MapPin size={12} /> {job.location} • {job.jobType.replace('_', ' ')}</p>
+                      <span className="text-primary fw-medium fs-7">{job.company?.name}</span>
+                      <p className="text-muted fs-8 mt-2"><MapPin size={12} /> {job.location} • {job.jobType?.replace('_', ' ')}</p>
                     </div>
                     <div className="d-flex justify-content-end border-top pt-3 mt-3">
                       <Link to="/" className="btn btn-sm btn-outline-primary-custom">View Details</Link>
@@ -305,8 +305,8 @@ export default function JobSeekerDashboard() {
                   <div className="card-main p-4 bg-white shadow-sm d-flex flex-column justify-content-between card-hover-border">
                     <div>
                       <h5 className="text-dark fw-bold mb-1">{job.title}</h5>
-                      <span className="text-primary fw-medium fs-7">{job.company.name}</span>
-                      <p className="text-muted fs-8 mt-2"><MapPin size={12} /> {job.location} • {job.jobType.replace('_', ' ')}</p>
+                      <span className="text-primary fw-medium fs-7">{job.company?.name}</span>
+                      <p className="text-muted fs-8 mt-2"><MapPin size={12} /> {job.location} • {job.jobType?.replace('_', ' ')}</p>
                       {job.requirements && (
                         <div className="d-flex flex-wrap gap-1 mt-2">
                           {job.requirements.split(',').map((req, idx) => (
