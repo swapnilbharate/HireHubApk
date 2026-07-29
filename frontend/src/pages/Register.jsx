@@ -69,7 +69,23 @@ export default function Register() {
         navigate('/login')
       }, 2000)
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to register account. Email might be in use.')
+      if (err.response?.data) {
+        if (err.response.data.message) {
+          setError(err.response.data.message)
+        } else if (typeof err.response.data === 'object') {
+          // Backend validation errors (e.g., Map<String, String>)
+          const errorMessages = Object.values(err.response.data)
+          if (errorMessages.length > 0 && typeof errorMessages[0] === 'string') {
+            setError(errorMessages.join(', '))
+          } else {
+            setError('Failed to register account. Please check your inputs.')
+          }
+        } else {
+          setError('Failed to register account.')
+        }
+      } else {
+        setError('Network error. Please try again later.')
+      }
     } finally {
       setSubmitting(false)
     }
