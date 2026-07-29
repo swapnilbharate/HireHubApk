@@ -188,7 +188,7 @@ export default function JobSeekerDashboard() {
           className={`tab-pill ${activeTab === 'saved' ? 'active' : ''}`}
           onClick={() => setActiveTab('saved')}
         >
-          Saved Jobs ({savedJobs.length})
+          Wishlist ({savedJobs.length})
         </button>
         <button 
           className={`tab-pill ${activeTab === 'recommended' ? 'active' : ''}`}
