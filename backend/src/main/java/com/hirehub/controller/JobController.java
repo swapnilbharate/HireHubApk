@@ -155,6 +155,7 @@ public class JobController {
 
     // AI Job Recommendations based on Skills
     @GetMapping("/recommended")
+    @Transactional
     public ResponseEntity<?> getRecommendedJobs(Principal principal) {
         if (principal == null) {
             return ResponseEntity.status(401).body("Unauthorized");

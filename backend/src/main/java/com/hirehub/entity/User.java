@@ -17,6 +17,7 @@ public class User {
     private String email;
 
     @Column(nullable = false, length = 255)
+    @com.fasterxml.jackson.annotation.JsonIgnore
     private String password;
 
     @Column(name = "full_name", nullable = false, length = 100)
@@ -38,6 +39,7 @@ public class User {
         joinColumns = @JoinColumn(name = "user_id"),
         inverseJoinColumns = @JoinColumn(name = "skill_id")
     )
+    @com.fasterxml.jackson.annotation.JsonIgnore
     private Set<Skill> skills = new HashSet<>();
 
     @Column(length = 20)
