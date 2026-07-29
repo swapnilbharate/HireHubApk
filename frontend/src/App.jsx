@@ -190,20 +190,26 @@ function Navigation() {
               </>
             )}
           </ul>
-          <div className="d-flex align-items-center gap-3">
+          <div className="d-flex flex-column flex-lg-row align-items-start align-items-lg-center gap-3 mt-3 mt-lg-0">
             {user ? (
               <>
                 {/* Notification Dropdown */}
-                <div className="dropdown">
-                  <button className="btn btn-link position-relative text-muted p-2" type="button" data-bs-toggle="dropdown" onClick={refreshNotifications}>
+                <div className="dropdown w-100 w-lg-auto">
+                  <button className="btn btn-link position-relative text-muted p-2 d-flex align-items-center gap-2 w-100 justify-content-start justify-content-lg-center text-decoration-none" type="button" data-bs-toggle="dropdown" onClick={refreshNotifications}>
                     <Bell size={22} />
+                    <span className="d-lg-none fw-medium text-body">Notifications</span>
                     {unreadCount > 0 && (
-                      <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style={{ fontSize: '0.65rem' }}>
+                      <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger d-none d-lg-block" style={{ fontSize: '0.65rem' }}>
                         {unreadCount}
                       </span>
                     )}
+                    {unreadCount > 0 && (
+                      <span className="badge rounded-pill bg-danger d-lg-none ms-2">
+                        {unreadCount} new
+                      </span>
+                    )}
                   </button>
-                  <ul className="dropdown-menu dropdown-menu-end border-light p-2 shadow-sm" style={{ width: '320px', maxHeight: '400px', overflowY: 'auto', backgroundColor: '#fff' }}>
+                  <ul className="dropdown-menu dropdown-menu-lg-end border-light p-2 shadow-sm" style={{ width: '100%', maxWidth: '320px', maxHeight: '400px', overflowY: 'auto' }}>
                     <div className="d-flex justify-content-between align-items-center px-2 py-1 border-bottom mb-2">
                       <span className="text-dark fw-semibold" style={{ fontSize: '0.85rem' }}>Notifications</span>
                       {unreadCount > 0 && (
@@ -228,8 +234,8 @@ function Navigation() {
                 </div>
                 
                 {/* Profile Dropdown */}
-                <div className="dropdown">
-                  <button className="btn btn-link d-flex align-items-center gap-2 text-decoration-none text-light p-0 border-0" type="button" data-bs-toggle="dropdown">
+                <div className="dropdown w-100 w-lg-auto">
+                  <button className="btn btn-link d-flex align-items-center gap-2 text-decoration-none text-light p-2 border-0 w-100 justify-content-start justify-content-lg-center" type="button" data-bs-toggle="dropdown">
                     <img 
                       src={user.profilePhotoUrl || "/images/avatars/default-avatar.png"} 
                       alt="Profile" 
@@ -237,9 +243,9 @@ function Navigation() {
                       style={{ width: '36px', height: '36px', objectFit: 'cover', border: '1px solid var(--border-light)' }} 
                       onError={(e) => { e.target.src = "/images/avatars/default-avatar.png" }}
                     />
-                    <span className="fw-semibold d-none d-md-inline" style={{ fontSize: '0.9rem' }}>{user.fullName}</span>
+                    <span className="fw-semibold" style={{ fontSize: '0.9rem', color: 'var(--text-primary)' }}>{user.fullName}</span>
                   </button>
-                  <ul className="dropdown-menu dropdown-menu-end shadow-sm border-light" style={{ minWidth: '180px' }}>
+                  <ul className="dropdown-menu dropdown-menu-lg-end shadow-sm border-light" style={{ minWidth: '180px', width: '100%' }}>
                     <li>
                       <Link className="dropdown-item d-flex align-items-center gap-2 py-2" to="/profile">
                         <User size={16} /> My Profile
@@ -260,10 +266,10 @@ function Navigation() {
                 </div>
               </>
             ) : (
-              <>
-                <Link className="btn text-secondary text-decoration-none px-3" to="/login" style={{ fontWeight: 500 }}>Login</Link>
-                <Link className="btn btn-grad-primary" to="/register">Register</Link>
-              </>
+              <div className="d-flex flex-column flex-lg-row gap-2 w-100">
+                <Link className="btn btn-outline-glass w-100 w-lg-auto text-center" to="/login">Login</Link>
+                <Link className="btn btn-grad-primary w-100 w-lg-auto text-center" to="/register">Register</Link>
+              </div>
             )}
           </div>
         </div>
