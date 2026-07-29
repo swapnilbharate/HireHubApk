@@ -283,7 +283,7 @@ export default function JobSeekerDashboard() {
                       <p className="text-muted fs-8 mt-2"><MapPin size={12} /> {job?.location} • {job?.jobType?.replace('_', ' ')}</p>
                     </div>
                     <div className="d-flex justify-content-end border-top pt-3 mt-3">
-                      <Link to="/" className="btn btn-sm btn-outline-primary-custom">View Details</Link>
+                      <Link to={`/jobs/${job?.id}`} className="btn btn-sm btn-outline-primary-custom">View Details</Link>
                     </div>
                   </div>
                 </div>
@@ -316,7 +316,7 @@ export default function JobSeekerDashboard() {
                       )}
                     </div>
                     <div className="d-flex justify-content-end border-top pt-3 mt-3">
-                      <Link to="/" className="btn btn-sm btn-grad-primary">Apply Now</Link>
+                      <Link to={`/jobs/${job?.id}`} className="btn btn-sm btn-grad-primary">Apply Now</Link>
                     </div>
                   </div>
                 </div>
