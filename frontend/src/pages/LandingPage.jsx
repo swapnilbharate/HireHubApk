@@ -7,6 +7,8 @@ import {
 } from 'lucide-react'
 import { AuthContext } from '../App'
 import { useNavigate, Link } from 'react-router-dom'
+import { motion } from 'framer-motion'
+import toast from 'react-hot-toast'
 
 export default function LandingPage() {
   const { user } = useContext(AuthContext)
@@ -131,20 +133,26 @@ export default function LandingPage() {
         const updated = new Set(savedJobIds)
         updated.delete(jobId)
         setSavedJobIds(updated)
+        toast.success("Job removed from saved list")
       } else {
         await axios.post(`/api/jobs/${jobId}/save`)
         const updated = new Set(savedJobIds)
         updated.add(jobId)
         setSavedJobIds(updated)
+        toast.success("Job saved successfully!")
       }
     } catch (err) {
-      console.error("Failed to bookmark job", err)
+      toast.error("Failed to bookmark job")
     }
   }
 
 
   return (
-    <div className="animate-fade-in">
+    <motion.div 
+      initial={{ opacity: 0, y: 15 }} 
+      animate={{ opacity: 1, y: 0 }} 
+      transition={{ duration: 0.4 }}
+    >
       {/* Premium Hero Section */}
       <div className="hero-wrapper rounded-4 shadow-sm mb-5 overflow-hidden">
         <div className="container px-4">
@@ -163,27 +171,44 @@ export default function LandingPage() {
               
               {/* Counter Row */}
               <div className="d-flex flex-wrap gap-4 mt-2">
-                <div className="text-center bg-white p-3 rounded-3 shadow-sm border border-light" style={{ minWidth: '110px' }}>
-                  <div className="counter-stat text-gradient">10k+</div>
+                <motion.div 
+                  whileHover={{ scale: 1.05, y: -5 }}
+                  transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                  className="text-center bg-white p-3 rounded-3 shadow-sm border border-light" 
+                  style={{ minWidth: '110px', cursor: 'pointer' }}
+                >
+                  <div className="counter-stat text-gradient">{jobs.length > 0 ? jobs.length : '10+'}</div>
                   <div className="text-muted fs-8 fw-semibold text-uppercase">Live Jobs</div>
-                </div>
-                <div className="text-center bg-white p-3 rounded-3 shadow-sm border border-light" style={{ minWidth: '110px' }}>
-                  <div className="counter-stat text-gradient">5k+</div>
+                </motion.div>
+                <motion.div 
+                  whileHover={{ scale: 1.05, y: -5 }}
+                  transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                  className="text-center bg-white p-3 rounded-3 shadow-sm border border-light" 
+                  style={{ minWidth: '110px', cursor: 'pointer' }}
+                >
+                  <div className="counter-stat text-gradient">{companies.length > 0 ? companies.length : '5+'}</div>
                   <div className="text-muted fs-8 fw-semibold text-uppercase">Companies</div>
-                </div>
-                <div className="text-center bg-white p-3 rounded-3 shadow-sm border border-light" style={{ minWidth: '110px' }}>
+                </motion.div>
+                <motion.div 
+                  whileHover={{ scale: 1.05, y: -5 }}
+                  transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                  className="text-center bg-white p-3 rounded-3 shadow-sm border border-light" 
+                  style={{ minWidth: '110px', cursor: 'pointer' }}
+                >
                   <div className="counter-stat text-gradient">95%</div>
                   <div className="text-muted fs-8 fw-semibold text-uppercase">Match Rate</div>
-                </div>
+                </motion.div>
               </div>
             </div>
             
             <div className="col-lg-5 d-none d-lg-block text-center">
-              <img 
+              <motion.img 
                 src="/images/hero-banner.png" 
                 alt="Banner Graphic" 
                 className="img-fluid rounded-4 shadow"
                 style={{ maxHeight: '350px', objectFit: 'cover' }}
+                animate={{ y: [0, -15, 0] }}
+                transition={{ repeat: Infinity, duration: 4, ease: "easeInOut" }}
                 onError={(e) => { e.target.style.display = 'none' }}
               />
             </div>
@@ -262,8 +287,13 @@ export default function LandingPage() {
             <Building2 className="text-primary" /> Top Companies Hiring
           </h3>
           <div className="row g-4">
-            {companies.map(comp => (
-              <div key={comp.id} className="col-12 col-md-6 col-lg-3">
+            {companies.filter((v,i,a)=>a.findIndex(t=>(t.name===v.name))===i).map(comp => (
+              <motion.div 
+                key={comp.id} 
+                className="col-12 col-md-6 col-lg-3"
+                whileHover={{ y: -5 }}
+                transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+              >
                 <Link 
                   to={`/companies/${comp.id}`} 
                   className="text-decoration-none d-block h-100"
@@ -276,12 +306,7 @@ export default function LandingPage() {
                       style={{ height: '80px', objectFit: 'cover' }}
                       onError={(e) => { e.target.src = '/images/companies/google-office.png' }}
                     />
-                    <div 
-                      className="bg-white rounded-3 p-1 border shadow-sm"
-                      style={{ width: '48px', height: '48px', display: 'flex', alignItems: 'center', justifyContent: 'center', marginTop: '-35px', zIndex: 2 }}
-                    >
-                      <img src={comp.logoUrl} alt="Logo" className="img-fluid" style={{ maxHeight: '100%' }} />
-                    </div>
+
                     <h5 className="mb-1 text-dark fw-bold mt-2">{comp.name}</h5>
                     <span className="text-muted fs-8">{comp.industry}</span>
                     <div className="d-flex align-items-center gap-1 mt-2 text-warning fs-8">
@@ -289,7 +314,7 @@ export default function LandingPage() {
                     </div>
                   </div>
                 </Link>
-              </div>
+              </motion.div>
             ))}
           </div>
         </div>
@@ -341,7 +366,12 @@ export default function LandingPage() {
           ) : (
             <div className="row g-4">
               {jobs.map(job => (
-                <div key={job.id} className="col-md-6 col-lg-6">
+                <motion.div 
+                  key={job.id} 
+                  className="col-md-6 col-lg-6"
+                  whileHover={{ y: -5 }}
+                  transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+                >
                   <div className="card-main p-4 h-100 d-flex flex-column justify-content-between position-relative card-hover-border">
                     {/* Bookmark Heart */}
                     {user?.role === 'ROLE_JOBSEEKER' && (
@@ -359,11 +389,18 @@ export default function LandingPage() {
                     
                     <div>
                       <div className="d-flex gap-3 align-items-start mb-3">
-                        <div 
-                          className="bg-white rounded-3 p-1 border shadow-sm flex-shrink-0"
-                          style={{ width: '48px', height: '48px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-                        >
-                          <img src={job.company.logoUrl} alt="Logo" className="img-fluid" style={{ maxHeight: '100%' }} />
+                        <div className="bg-light rounded border p-1" style={{ width: '48px', height: '48px', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                          {job.company.logoUrl ? (
+                            <img 
+                              src={job.company.logoUrl} 
+                              alt={`${job.company.name} logo`} 
+                              className="img-fluid" 
+                              style={{ maxHeight: '100%', maxWidth: '100%', objectFit: 'contain' }}
+                              onError={(e) => { e.target.src = '/images/companies/google-office.png' }}
+                            />
+                          ) : (
+                            <Building2 className="text-muted" size={24} />
+                          )}
                         </div>
                         <div>
                           <h5 className="text-dark fw-bold mb-0">{job.title}</h5>
@@ -397,7 +434,7 @@ export default function LandingPage() {
                       </button>
                     </div>
                   </div>
-                </div>
+                </motion.div>
               ))}
             </div>
           )}
@@ -455,6 +492,6 @@ export default function LandingPage() {
           </div>
         </div>
       </footer>
-    </div>
+    </motion.div>
   )
 }

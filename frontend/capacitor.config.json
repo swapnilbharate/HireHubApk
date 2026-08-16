@@ -1,0 +1,8 @@
+{
+  "appId": "com.hirehub.app",
+  "appName": "HireHub",
+  "webDir": "dist",
+  "server": {
+    "cleartext": true
+  }
+}

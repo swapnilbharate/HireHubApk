@@ -4,8 +4,10 @@ import { AuthContext } from '../App'
 import { Link } from 'react-router-dom'
 import { 
   Plus, Edit2, Trash2, Calendar, MapPin, DollarSign, Building2, User, 
-  Clock, CheckCircle, XCircle, Search, Sparkles, FileText, ChevronRight, Eye, Award
+  Clock, CheckCircle, XCircle, Search, Sparkles, FileText, ChevronRight, Eye, Award, Briefcase, Loader2, X
 } from 'lucide-react'
+import { motion, AnimatePresence } from 'framer-motion'
+import toast from 'react-hot-toast'
 
 export default function RecruiterDashboard() {
   const { user } = useContext(AuthContext)
@@ -19,7 +21,7 @@ export default function RecruiterDashboard() {
   
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
-  const [success, setSuccess] = useState('')
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   // Job Modal
   const [showJobModal, setShowJobModal] = useState(false)
@@ -32,6 +34,27 @@ export default function RecruiterDashboard() {
     jobType: 'FULL_TIME',
     salaryRange: ''
   })
+  
+  const [skillInput, setSkillInput] = useState('')
+  
+  const handleAddSkill = (e) => {
+    if (e.key === 'Enter' || e.key === ',') {
+      e.preventDefault();
+      const val = skillInput.trim().replace(',', '');
+      if (val) {
+        const currentSkills = jobForm.requirements ? jobForm.requirements.split(',').map(s => s.trim()).filter(Boolean) : [];
+        if (!currentSkills.includes(val)) {
+          setJobForm({ ...jobForm, requirements: [...currentSkills, val].join(', ') });
+        }
+        setSkillInput('');
+      }
+    }
+  }
+
+  const handleRemoveSkill = (skillToRemove) => {
+    const currentSkills = jobForm.requirements ? jobForm.requirements.split(',').map(s => s.trim()).filter(Boolean) : [];
+    setJobForm({ ...jobForm, requirements: currentSkills.filter(s => s !== skillToRemove).join(', ') });
+  }
 
   // Interview Modal
   const [showInterviewModal, setShowInterviewModal] = useState(false)
@@ -52,55 +75,47 @@ export default function RecruiterDashboard() {
   const fetchDashboardData = async () => {
     setLoading(true)
     setError('')
-    try {
-      const [statsRes, jobsRes, appsRes, interviewsRes] = await Promise.all([
-        axios.get('/api/recruiter/stats'),
-        axios.get('/api/jobs/my-postings'),
-        axios.get('/api/applications/recruiter/list'),
-        axios.get('/api/recruiter/interviews')
-      ])
-      
-      setStats(statsRes.data)
-      setJobs(jobsRes.data)
-      setApplicants(appsRes.data)
-      setInterviews(interviewsRes.data)
-
-      // Fetch company profile associated with recruiter user
-      const profileRes = await axios.get('/api/users/profile/details')
-      if (profileRes.data.user) {
-        // Find company from user's recruiter link
-        const email = profileRes.data.user.email
-        // We can request public user details to fetch recruiter company link
-        const fullProfileRes = await axios.get(`/api/users/profile/public/${email}`)
-        // Get company information
-        if (jobsRes.data[0]) {
-          setCompanyInfo(jobsRes.data[0].company)
-        }
-      }
-    } catch (err) {
-      console.error(err)
-      setError('Failed to load recruiter data. Ensure backend is running.')
-    } finally {
+    
+    // Fetch stats, jobs, applications, and interviews concurrently without blocking
+    axios.get('/api/recruiter/stats').then(res => {
+      setStats(res.data)
       setLoading(false)
-    }
+    }).catch(err => {
+      console.error(err)
+      setError('Failed to load recruiter stats. Ensure backend is running.')
+      setLoading(false)
+    })
+    
+    axios.get('/api/jobs/my-postings').then(res => setJobs(res.data)).catch(console.error)
+    axios.get('/api/applications/recruiter/list').then(res => setApplicants(res.data)).catch(console.error)
+    axios.get('/api/recruiter/interviews').then(res => setInterviews(res.data)).catch(console.error)
+
+    // Fetch company profile associated with recruiter user
+    axios.get('/api/users/profile/details').then(profileRes => {
+      if (profileRes.data.user) {
+         // We can get company info from the jobs list once it loads
+      }
+    }).catch(console.error)
   }
 
   // Job form handles
   const handleJobSubmit = async (e) => {
     e.preventDefault()
+    setIsSubmitting(true)
     try {
       if (editingJobId) {
         await axios.put(`/api/jobs/${editingJobId}`, jobForm)
-        setSuccess('Job posting updated successfully!')
+        toast.success('Job posting updated successfully!')
       } else {
         await axios.post('/api/jobs', jobForm)
-        setSuccess('New job opening posted successfully!')
+        toast.success('New job opening posted successfully!')
       }
       setShowJobModal(false)
       fetchDashboardData()
-      setTimeout(() => setSuccess(''), 2000)
     } catch (err) {
-      setError('Failed to save job post details.')
+      toast.error('Failed to save job post details.')
+    } finally {
+      setIsSubmitting(false)
     }
   }
 
@@ -108,11 +123,10 @@ export default function RecruiterDashboard() {
     if (window.confirm('Are you sure you want to delete this job posting?')) {
       try {
         await axios.delete(`/api/jobs/${id}`)
-        setSuccess('Job posting deleted.')
+        toast.success('Job posting deleted.')
         fetchDashboardData()
-        setTimeout(() => setSuccess(''), 2000)
       } catch (err) {
-        setError('Failed to delete job posting.')
+        toast.error('Failed to delete job posting.')
       }
     }
   }
@@ -123,16 +137,16 @@ export default function RecruiterDashboard() {
       await axios.put(`/api/applications/${appId}/status`, null, {
         params: { status }
       })
-      setSuccess(`Applicant status updated to ${status}.`)
+      toast.success(`Applicant status updated to ${status}.`)
       fetchDashboardData()
-      setTimeout(() => setSuccess(''), 2000)
     } catch (err) {
-      setError('Failed to update status.')
+      toast.error('Failed to update status.')
     }
   }
 
   const handleScheduleInterviewSubmit = async (e) => {
     e.preventDefault()
+    setIsSubmitting(true)
     try {
       // Endpoint: POST /api/recruiter/interviews/schedule
       await axios.post('/api/recruiter/interviews/schedule', null, {
@@ -143,12 +157,13 @@ export default function RecruiterDashboard() {
           notes: interviewForm.notes
         }
       })
-      setSuccess('Interview scheduled and candidate notified!')
+      toast.success('Interview scheduled and candidate notified!')
       setShowInterviewModal(false)
       fetchDashboardData()
-      setTimeout(() => setSuccess(''), 2000)
     } catch (err) {
-      setError('Failed to schedule interview.')
+      toast.error('Failed to schedule interview.')
+    } finally {
+      setIsSubmitting(false)
     }
   }
 
@@ -231,9 +246,6 @@ export default function RecruiterDashboard() {
         )}
       </div>
 
-      {error && <div className="alert alert-danger py-2 fs-7 rounded shadow-sm mb-3">{error}</div>}
-      {success && <div className="alert alert-success py-2 fs-7 rounded shadow-sm mb-3">{success}</div>}
-
       {loading ? (
         <div className="text-center py-5">
           <div className="spinner-border text-primary" role="status"></div>
@@ -245,7 +257,7 @@ export default function RecruiterDashboard() {
             <div className="col-12"><div className="card-main text-center p-5 text-muted bg-white">No jobs posted yet. Click Post New Job to begin.</div></div>
           ) : (
             jobs.map(job => (
-              <div key={job.id} className="col-12">
+              <motion.div key={job.id} whileHover={{ scale: 1.01 }} className="col-12">
                 <div className="card-main p-4 bg-white shadow-sm card-hover-border">
                   <div className="d-flex justify-content-between align-items-start flex-wrap gap-2">
                     <div>
@@ -286,7 +298,7 @@ export default function RecruiterDashboard() {
                     </div>
                   </div>
                 </div>
-              </div>
+              </motion.div>
             ))
           )}
         </div>
@@ -401,7 +413,7 @@ export default function RecruiterDashboard() {
             <div className="col-12"><div className="card-main text-center p-5 text-muted bg-white">No interviews scheduled yet. Shortlist applicants to schedule.</div></div>
           ) : (
             interviews.map(meet => (
-              <div key={meet.id} className="col-md-6 col-lg-6">
+              <motion.div key={meet.id} whileHover={{ scale: 1.01 }} className="col-md-6 col-lg-6">
                 <div className="card-main p-4 bg-white shadow-sm border border-light position-relative">
                   <div className="d-flex align-items-center gap-3 mb-3 border-bottom pb-2">
                     <div className="bg-primary-subtle text-primary p-2 rounded-circle">
@@ -432,7 +444,7 @@ export default function RecruiterDashboard() {
                     )}
                   </ul>
                 </div>
-              </div>
+              </motion.div>
             ))
           )}
         </div>
@@ -441,30 +453,43 @@ export default function RecruiterDashboard() {
       {/* MODALS */}
       {/* 1. Job Modal (Create/Edit) */}
       {showJobModal && (
-        <div className="modal show d-block" tabIndex="-1" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
-          <div className="modal-dialog modal-lg">
-            <div className="modal-content border-light rounded-4 shadow-lg p-3" style={{ backgroundColor: 'var(--bg-card)' }}>
+        <div className="modal show d-block" tabIndex="-1" style={{ backgroundColor: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(4px)' }}>
+          <div className="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+            <motion.div 
+              initial={{ scale: 0.95, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+              className="modal-content border-light rounded-4 shadow-lg p-3" 
+              style={{ backgroundColor: 'var(--bg-card)' }}
+            >
               <div className="modal-header border-0 pb-0">
-                <h5 className="modal-title fw-bold text-dark">{editingJobId ? 'Edit Job Posting' : 'Post New Job'}</h5>
-                <button type="button" className="btn-close" onClick={() => setShowJobModal(false)}></button>
+                <h5 className="modal-title fw-bold text-dark d-flex align-items-center gap-2">
+                  <Briefcase size={20} className="text-primary" />
+                  {editingJobId ? 'Edit Job Posting' : 'Post New Job'}
+                </h5>
+                <button type="button" className="btn-close shadow-none" onClick={() => setShowJobModal(false)}></button>
               </div>
               <form onSubmit={handleJobSubmit}>
                 <div className="modal-body">
-                  <div className="row g-3">
+                  <div className="row g-2">
                     <div className="col-md-8">
-                      <label className="form-label fs-7">Job Title</label>
-                      <input 
-                        type="text" 
-                        className="form-control input-main" 
-                        value={jobForm.title}
-                        onChange={e => setJobForm({ ...jobForm, title: e.target.value })}
-                        required
-                      />
+                      <label className="form-label fs-7 fw-medium text-muted mb-1">Job Title</label>
+                      <div className="input-group">
+                        <span className="input-group-text bg-light border-0 text-muted"><Briefcase size={16} /></span>
+                        <input 
+                          type="text" 
+                          className="form-control input-main border-0 bg-light" 
+                          placeholder="e.g. Senior Software Engineer"
+                          value={jobForm.title}
+                          onChange={e => setJobForm({ ...jobForm, title: e.target.value })}
+                          required
+                        />
+                      </div>
                     </div>
                     <div className="col-md-4">
-                      <label className="form-label fs-7">Job Type</label>
+                      <label className="form-label fs-7 fw-medium text-muted mb-1">Job Type</label>
                       <select 
-                        className="form-select input-main"
+                        className="form-select input-main bg-light border-0"
                         value={jobForm.jobType}
                         onChange={e => setJobForm({ ...jobForm, jobType: e.target.value })}
                       >
@@ -475,55 +500,81 @@ export default function RecruiterDashboard() {
                       </select>
                     </div>
                     <div className="col-md-6">
-                      <label className="form-label fs-7">Location</label>
-                      <input 
-                        type="text" 
-                        className="form-control input-main" 
-                        value={jobForm.location}
-                        onChange={e => setJobForm({ ...jobForm, location: e.target.value })}
-                        required
-                      />
+                      <label className="form-label fs-7 fw-medium text-muted mb-1">Location</label>
+                      <div className="input-group">
+                        <span className="input-group-text bg-light border-0 text-muted"><MapPin size={16} /></span>
+                        <input 
+                          type="text" 
+                          className="form-control input-main border-0 bg-light" 
+                          placeholder="e.g. New York, NY or Remote"
+                          value={jobForm.location}
+                          onChange={e => setJobForm({ ...jobForm, location: e.target.value })}
+                          required
+                        />
+                      </div>
                     </div>
                     <div className="col-md-6">
-                      <label className="form-label fs-7">Salary Range</label>
-                      <input 
-                        type="text" 
-                        className="form-control input-main" 
-                        placeholder="e.g. ₹10,00,000 - ₹15,00,000"
-                        value={jobForm.salaryRange}
-                        onChange={e => setJobForm({ ...jobForm, salaryRange: e.target.value })}
-                      />
+                      <label className="form-label fs-7 fw-medium text-muted mb-1">Salary Range</label>
+                      <div className="input-group">
+                        <span className="input-group-text bg-light border-0 text-muted"><DollarSign size={16} /></span>
+                        <input 
+                          type="text" 
+                          className="form-control input-main border-0 bg-light" 
+                          placeholder="e.g. ₹10,00,000 - ₹15,00,000"
+                          value={jobForm.salaryRange}
+                          onChange={e => setJobForm({ ...jobForm, salaryRange: e.target.value })}
+                        />
+                      </div>
                     </div>
                     <div className="col-12">
-                      <label className="form-label fs-7">Required Skills (Comma-separated list)</label>
-                      <input 
-                        type="text" 
-                        className="form-control input-main" 
-                        placeholder="e.g. Java, Spring Boot, MySQL"
-                        value={jobForm.requirements}
-                        onChange={e => setJobForm({ ...jobForm, requirements: e.target.value })}
-                        required
-                      />
-                      <span className="text-muted fs-8 mt-1 d-block">These tags are matched by AI to calculate applicant ATS compatibility scores.</span>
+                      <label className="form-label fs-7 fw-medium text-muted mb-1">Required Skills</label>
+                      <div className="p-2 bg-light border-0 rounded d-flex flex-wrap gap-2 align-items-center" style={{ minHeight: '42px' }}>
+                        <Sparkles size={16} className="text-muted ms-1 me-1" />
+                        
+                        {(jobForm.requirements ? jobForm.requirements.split(',').map(s => s.trim()).filter(Boolean) : []).map((skill, idx) => (
+                          <span key={idx} className="badge bg-primary text-white d-flex align-items-center gap-1 px-2 py-1 fs-8 rounded-pill">
+                            {skill}
+                            <X size={12} style={{cursor: 'pointer'}} onClick={() => handleRemoveSkill(skill)} />
+                          </span>
+                        ))}
+                        
+                        <input 
+                          type="text" 
+                          className="border-0 bg-transparent flex-grow-1 fs-7" 
+                          style={{ outline: 'none', minWidth: '150px' }}
+                          placeholder="Type skill & press Enter..."
+                          value={skillInput}
+                          onChange={e => setSkillInput(e.target.value)}
+                          onKeyDown={handleAddSkill}
+                        />
+                      </div>
+                      <span className="text-muted fs-8 mt-1 d-block">Press Enter or comma to add a skill. Used for ATS calculation.</span>
                     </div>
                     <div className="col-12">
-                      <label className="form-label fs-7">Job Description</label>
-                      <textarea 
-                        className="form-control input-main" 
-                        rows="5"
-                        value={jobForm.description}
-                        onChange={e => setJobForm({ ...jobForm, description: e.target.value })}
-                        required
-                      ></textarea>
+                      <label className="form-label fs-7 fw-medium text-muted mb-1">Job Description</label>
+                      <div className="position-relative">
+                        <FileText size={16} className="position-absolute text-muted" style={{ top: '12px', left: '14px' }} />
+                        <textarea 
+                          className="form-control input-main bg-light border-0" 
+                          rows="3"
+                          style={{ paddingLeft: '40px' }}
+                          placeholder="Describe the responsibilities and ideal candidate profile..."
+                          value={jobForm.description}
+                          onChange={e => setJobForm({ ...jobForm, description: e.target.value })}
+                          required
+                        ></textarea>
+                      </div>
                     </div>
                   </div>
                 </div>
                 <div className="modal-footer border-0 pt-0">
-                  <button type="button" className="btn btn-outline-glass" onClick={() => setShowJobModal(false)}>Cancel</button>
-                  <button type="submit" className="btn btn-grad-primary">Save Posting</button>
+                  <button type="button" className="btn btn-outline-secondary px-4 rounded-pill" onClick={() => setShowJobModal(false)} disabled={isSubmitting}>Cancel</button>
+                  <button type="submit" className="btn btn-grad-primary px-4 rounded-pill shadow-sm" disabled={isSubmitting}>
+                    {isSubmitting ? <><Loader2 size={16} className="spin me-2"/>Saving...</> : editingJobId ? 'Save Changes' : 'Publish Job'}
+                  </button>
                 </div>
               </form>
-            </div>
+            </motion.div>
           </div>
         </div>
       )}
@@ -531,7 +582,7 @@ export default function RecruiterDashboard() {
       {/* 2. Schedule Interview Modal */}
       {showInterviewModal && (
         <div className="modal show d-block" tabIndex="-1" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
-          <div className="modal-dialog">
+          <div className="modal-dialog modal-dialog-centered modal-dialog-scrollable">
             <div className="modal-content border-light rounded-4 shadow-lg p-3" style={{ backgroundColor: 'var(--bg-card)' }}>
               <div className="modal-header border-0 pb-0">
                 <h5 className="modal-title fw-bold text-dark">Schedule Interview Panel</h5>
@@ -542,7 +593,7 @@ export default function RecruiterDashboard() {
                   <p className="fs-7 text-muted mb-3">
                     Scheduling interview for <strong>{selectedApplicant?.user.fullName}</strong> for the role of <strong>{selectedApplicant?.job.title}</strong>.
                   </p>
-                  <div className="row g-3">
+                  <div className="row g-2">
                     <div className="col-12">
                       <label className="form-label fs-7">Interview Date & Time</label>
                       <input 
@@ -568,7 +619,7 @@ export default function RecruiterDashboard() {
                       <label className="form-label fs-7">Agenda / Recruiter Notes</label>
                       <textarea 
                         className="form-control input-main" 
-                        rows="3"
+                        rows="2"
                         placeholder="Covering system design, concurrency, databases..."
                         value={interviewForm.notes}
                         onChange={e => setInterviewForm({ ...interviewForm, notes: e.target.value })}
@@ -577,8 +628,10 @@ export default function RecruiterDashboard() {
                   </div>
                 </div>
                 <div className="modal-footer border-0 pt-0">
-                  <button type="button" className="btn btn-outline-glass" onClick={() => setShowInterviewModal(false)}>Cancel</button>
-                  <button type="submit" className="btn btn-grad-primary">Confirm & Notify</button>
+                  <button type="button" className="btn btn-outline-glass" onClick={() => setShowInterviewModal(false)} disabled={isSubmitting}>Cancel</button>
+                  <button type="submit" className="btn btn-grad-primary" disabled={isSubmitting}>
+                    {isSubmitting ? <><Loader2 size={16} className="spin me-2"/>Confirming...</> : 'Confirm & Notify'}
+                  </button>
                 </div>
               </form>
             </div>

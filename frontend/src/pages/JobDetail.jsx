@@ -6,6 +6,7 @@ import {
   MapPin, Briefcase, DollarSign, Award, Calendar, Building2, 
   ArrowLeft, ArrowRight, LogIn, Users, Clock, Globe, Heart
 } from 'lucide-react'
+import toast from 'react-hot-toast'
 
 export default function JobDetail() {
   const { id } = useParams()
@@ -54,9 +55,12 @@ export default function JobDetail() {
         params: { coverLetter }
       })
       setApplySuccess('Application submitted successfully! The recruiter has been notified.')
+      toast.success('Successfully applied for ' + job.title + '!')
       setCoverLetter('')
     } catch (err) {
-      setApplyError(err.response?.data?.message || 'Failed to apply. You might have already applied.')
+      const errorMsg = err.response?.data?.message || 'Failed to apply. You might have already applied.';
+      setApplyError(errorMsg)
+      toast.error(errorMsg, { duration: 5000, style: { minWidth: '300px' } })
     } finally {
       setApplying(false)
     }

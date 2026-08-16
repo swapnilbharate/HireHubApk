@@ -2,12 +2,13 @@ package com.hirehub.config;
 
 import com.hirehub.entity.*;
 import com.hirehub.repository.*;
+
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.security.crypto.password.PasswordEncoder;
-
+import org.springframework.transaction.support.TransactionTemplate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -22,45 +23,51 @@ public class JobSeeder {
             RecruiterRepository recruiterRepository,
             UserRepository userRepository,
             RoleRepository roleRepository,
-            PasswordEncoder passwordEncoder) {
+            PasswordEncoder passwordEncoder,
+            TransactionTemplate transactionTemplate) {
         return args -> {
-            if (jobRepository.count() == 0) {
-                Role recruiterRole = roleRepository.findByName("ROLE_RECRUITER")
-                        .orElseThrow(() -> new RuntimeException("ROLE_RECRUITER not found"));
+            transactionTemplate.execute(status -> {
+                if (jobRepository.count() == 0) {
+                    Role recruiterRole = roleRepository.findByName("ROLE_RECRUITER")
+                            .orElseThrow(() -> new RuntimeException("ROLE_RECRUITER not found"));
 
                 // 1. Seed Indian Companies
                 String[][] companyData = {
-                    {"TCS", "Tata Consultancy Services is a global leader in IT services, consulting & business solutions.", "IT Services", "https://upload.wikimedia.org/wikipedia/commons/b/b1/Tata_Consultancy_Services_Logo.svg", "Mumbai, Maharashtra"},
-                    {"Infosys", "Infosys is a global leader in next-generation digital services and consulting.", "IT Services", "https://upload.wikimedia.org/wikipedia/commons/9/95/Infosys_logo.svg", "Bengaluru, Karnataka"},
-                    {"Wipro", "Wipro Limited is a leading technology services and consulting company.", "IT Services", "https://upload.wikimedia.org/wikipedia/commons/a/a0/Wipro_Logo.svg", "Bengaluru, Karnataka"},
-                    {"Reliance Jio", "Reliance Jio Infocomm Limited is an Indian telecommunications company.", "Telecommunications", "https://upload.wikimedia.org/wikipedia/commons/e/e5/Jio_Logo.svg", "Mumbai, Maharashtra"},
-                    {"Paytm", "Paytm is India's leading financial services company offering digital payments.", "Fintech", "https://upload.wikimedia.org/wikipedia/commons/c/c4/Paytm_Logo.svg", "Noida, Uttar Pradesh"},
-                    {"Zomato", "Zomato is an Indian multinational restaurant aggregator and food delivery company.", "Food Tech", "https://upload.wikimedia.org/wikipedia/commons/b/bd/Zomato_Logo.svg", "Gurugram, Haryana"},
-                    {"Flipkart", "Flipkart is India's leading e-commerce marketplace.", "E-commerce", "https://upload.wikimedia.org/wikipedia/commons/1/17/Flipkart_logo.png", "Bengaluru, Karnataka"},
-                    {"Swiggy", "Swiggy is India’s leading on-demand convenience platform.", "Food Tech", "https://upload.wikimedia.org/wikipedia/commons/1/13/Swiggy_logo.svg", "Bengaluru, Karnataka"}
+                    {"TCS", "Tata Consultancy Services is a global leader in IT services, consulting & business solutions.", "IT Services", "https://upload.wikimedia.org/wikipedia/commons/b/b1/Tata_Consultancy_Services_Logo.svg", "Mumbai, Maharashtra", "/images/companies/google-office.png"},
+                    {"Infosys", "Infosys is a global leader in next-generation digital services and consulting.", "IT Services", "https://upload.wikimedia.org/wikipedia/commons/9/95/Infosys_logo.svg", "Bengaluru, Karnataka", "/images/companies/microsoft-office.png"},
+                    {"Cred", "CRED is a members-only credit card bill payment platform that rewards its members.", "Fintech Startup", "https://upload.wikimedia.org/wikipedia/commons/e/e4/CRED_Logo_2021.png", "Bengaluru, Karnataka", "/images/companies/meta-office.png"},
+                    {"Razorpay", "Razorpay is the only payments solution in India that allows businesses to accept, process and disburse payments.", "Fintech Startup", "https://upload.wikimedia.org/wikipedia/commons/8/89/Razorpay_logo.svg", "Bengaluru, Karnataka", "/images/companies/amazon-office.png"},
+                    {"Groww", "Groww is an online investment platform that allows investors to open an account and trade in mutual funds and stocks.", "Fintech Startup", "https://upload.wikimedia.org/wikipedia/commons/4/41/Groww_app_logo.png", "Bengaluru, Karnataka", "/images/companies/google-office.png"},
+                    {"Zomato", "Zomato is an Indian multinational restaurant aggregator and food delivery company.", "Food Tech", "https://upload.wikimedia.org/wikipedia/commons/b/bd/Zomato_Logo.svg", "Gurugram, Haryana", "/images/companies/microsoft-office.png"},
+                    {"Flipkart", "Flipkart is India's leading e-commerce marketplace.", "E-commerce", "https://upload.wikimedia.org/wikipedia/commons/1/17/Flipkart_logo.png", "Bengaluru, Karnataka", "/images/companies/meta-office.png"},
+                    {"Swiggy", "Swiggy is India’s leading on-demand convenience platform.", "Food Tech", "https://upload.wikimedia.org/wikipedia/commons/1/13/Swiggy_logo.svg", "Bengaluru, Karnataka", "/images/companies/amazon-office.png"}
                 };
 
                 List<Company> companies = new ArrayList<>();
                 for (String[] data : companyData) {
-                    Company company = new Company();
-                    company.setName(data[0]);
-                    company.setDescription(data[1]);
-                    company.setIndustry(data[2]);
-                    company.setLogoUrl(data[3]);
-                    company.setLocation(data[4]);
-                    company.setCoverPhotoUrl("/images/companies/google-office.png");
-                    company.setSize("10000+");
-                    company.setFoundedYear(1990);
-                    companies.add(companyRepository.save(company));
+                    Company company = companyRepository.findFirstByName(data[0]).orElse(null);
+                    if (company == null) {
+                        company = new Company();
+                        company.setName(data[0]);
+                        company.setDescription(data[1]);
+                        company.setIndustry(data[2]);
+                        company.setLogoUrl(data[3]);
+                        company.setLocation(data[4]);
+                        company.setCoverPhotoUrl(data[5]);
+                        company.setSize("10000+");
+                        company.setFoundedYear(2010);
+                        company = companyRepository.save(company);
+                    }
+                    companies.add(company);
                 }
 
                 // 2. Seed Recruiter Users
                 String[][] recruiterUserData = {
                     {"tcs.hr@hirehub.com", "TCS HR Manager", "Senior Recruiter"},
                     {"infosys.hr@hirehub.com", "Infosys Talent Acquisition", "HR Lead"},
-                    {"wipro.hr@hirehub.com", "Wipro Recruitment Team", "Head of Hiring"},
-                    {"jio.hr@hirehub.com", "Jio Talent Partner", "Talent Acquisition"},
-                    {"paytm.hr@hirehub.com", "Paytm HR Team", "Recruiting Specialist"},
+                    {"cred.hr@hirehub.com", "Cred Recruitment Team", "Head of Hiring"},
+                    {"razorpay.hr@hirehub.com", "Razorpay Talent Partner", "Talent Acquisition"},
+                    {"groww.hr@hirehub.com", "Groww HR Team", "Recruiting Specialist"},
                     {"zomato.hr@hirehub.com", "Zomato Careers", "Technical Recruiter"},
                     {"flipkart.hr@hirehub.com", "Flipkart Talent Acquisition", "Principal Recruiter"},
                     {"swiggy.hr@hirehub.com", "Swiggy Careers", "HR Specialist"}
@@ -70,21 +77,28 @@ public class JobSeeder {
                 for (int i = 0; i < recruiterUserData.length; i++) {
                     String[] data = recruiterUserData[i];
                     
-                    User user = new User();
-                    user.setEmail(data[0]);
-                    user.setPassword(passwordEncoder.encode("password123"));
-                    user.setFullName(data[1]);
-                    user.setRole(recruiterRole);
-                    user.setStatus("ACTIVE");
-                    user.setProfilePhotoUrl("/images/avatars/default-avatar.png");
-                    user.setHeadline(data[2] + " at " + companies.get(i).getName());
-                    User savedUser = userRepository.save(user);
+                    User user = userRepository.findFirstByEmail(data[0]).orElse(null);
+                    if (user == null) {
+                        user = new User();
+                        user.setEmail(data[0]);
+                        user.setPassword(passwordEncoder.encode("password123"));
+                        user.setFullName(data[1]);
+                        user.setRole(recruiterRole);
+                        user.setStatus("ACTIVE");
+                        user.setProfilePhotoUrl("/images/avatars/default-avatar.png");
+                        user.setHeadline(data[2] + " at " + companies.get(i).getName());
+                        user = userRepository.save(user);
+                    }
 
-                    Recruiter recruiter = new Recruiter();
-                    recruiter.setUser(savedUser);
-                    recruiter.setCompany(companies.get(i));
-                    recruiter.setPosition(data[2]);
-                    recruiters.add(recruiterRepository.save(recruiter));
+                    Recruiter recruiter = recruiterRepository.findFirstByUserEmail(data[0]).orElse(null);
+                    if (recruiter == null) {
+                        recruiter = new Recruiter();
+                        recruiter.setUser(user);
+                        recruiter.setCompany(companies.get(i));
+                        recruiter.setPosition(data[2]);
+                        recruiter = recruiterRepository.save(recruiter);
+                    }
+                    recruiters.add(recruiter);
                 }
 
                 // 3. Seed 15 Realistic Jobs
@@ -125,7 +139,9 @@ public class JobSeeder {
                 }
 
                 System.out.println("Seeded 15 initial jobs with Indian companies.");
-            }
+                }
+                return null;
+            });
         };
     }
 }

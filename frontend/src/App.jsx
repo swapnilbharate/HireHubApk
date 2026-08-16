@@ -2,6 +2,7 @@ import React, { createContext, useState, useEffect, useCallback } from 'react'
 import { BrowserRouter as Router, Routes, Route, Link, Navigate } from 'react-router-dom'
 import axios from 'axios'
 import { Briefcase, LogOut, Bell, Compass, LayoutDashboard, BrainCircuit, User } from 'lucide-react'
+import { Toaster } from 'react-hot-toast'
 
 // Configure Axios Base URL for Production
 axios.defaults.baseURL = import.meta.env.VITE_API_BASE_URL || '';
@@ -108,6 +109,7 @@ export default function App() {
 
   return (
     <AuthContext.Provider value={{ user, setUser, login, logout, notifications, refreshNotifications: fetchNotifications }}>
+      <Toaster position="top-right" toastOptions={{ className: 'fs-7' }} />
       <Router>
         <Navigation />
         <main className="container py-4">

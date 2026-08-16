@@ -6,6 +6,7 @@ import {
   FileText, Plus, Trash2, CheckCircle, Clock, Calendar, 
   CheckSquare, Sparkles, X, Heart, Briefcase, MapPin, DollarSign, User
 } from 'lucide-react'
+import { motion } from 'framer-motion'
 
 export default function JobSeekerDashboard() {
   const { user } = useContext(AuthContext)
@@ -133,7 +134,11 @@ export default function JobSeekerDashboard() {
   return (
     <div className="animate-fade-in text-dark">
       {/* Seeker Profile Card Header Quickview */}
-      <div className="card-main p-4 mb-4 shadow-sm bg-white">
+      <motion.div 
+        whileHover={{ scale: 1.01 }}
+        transition={{ type: "spring", stiffness: 300, damping: 20 }}
+        className="card-main p-4 mb-4 shadow-sm bg-white"
+      >
         <div className="d-flex align-items-center gap-3 flex-wrap flex-md-nowrap">
           <img 
             src={profileDetail?.profilePhotoUrl || '/images/avatars/default-avatar.png'} 
@@ -150,30 +155,30 @@ export default function JobSeekerDashboard() {
             </Link>
           </div>
         </div>
-      </div>
+      </motion.div>
 
       {/* Upper overview stats */}
       <div className="row g-4 mb-4">
-        <div className="col-md-4">
-          <div className="card-main p-4 text-center bg-white shadow-sm stat-card-indigo">
+        <motion.div className="col-md-4" whileHover={{ scale: 1.05, y: -5 }} transition={{ type: "spring", stiffness: 300, damping: 20 }}>
+          <div className="card-main p-4 text-center bg-white shadow-sm stat-card-indigo h-100">
             <h6 className="text-muted mb-1 fs-7 fw-semibold text-uppercase">Total Applications</h6>
             <h2 className="display-6 fw-bold text-gradient">{applications.length}</h2>
           </div>
-        </div>
-        <div className="col-md-4">
-          <div className="card-main p-4 text-center bg-white shadow-sm stat-card-teal">
+        </motion.div>
+        <motion.div className="col-md-4" whileHover={{ scale: 1.05, y: -5 }} transition={{ type: "spring", stiffness: 300, damping: 20 }}>
+          <div className="card-main p-4 text-center bg-white shadow-sm stat-card-teal h-100">
             <h6 className="text-muted mb-1 fs-7 fw-semibold text-uppercase">Latest Resume Rating</h6>
             <h2 className="display-6 fw-bold text-gradient">
               {latestResume ? `${latestResume.aiScore}/100` : 'N/A'}
             </h2>
           </div>
-        </div>
-        <div className="col-md-4">
-          <div className="card-main p-4 text-center bg-white shadow-sm stat-card-purple">
+        </motion.div>
+        <motion.div className="col-md-4" whileHover={{ scale: 1.05, y: -5 }} transition={{ type: "spring", stiffness: 300, damping: 20 }}>
+          <div className="card-main p-4 text-center bg-white shadow-sm stat-card-purple h-100">
             <h6 className="text-muted mb-1 fs-7 fw-semibold text-uppercase">Skills Profile</h6>
             <h2 className="display-6 fw-bold text-gradient">{skills.length}</h2>
           </div>
-        </div>
+        </motion.div>
       </div>
 
       {/* Tabs Menu */}

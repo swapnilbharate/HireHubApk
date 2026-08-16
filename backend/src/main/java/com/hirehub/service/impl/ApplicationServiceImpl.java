@@ -50,6 +50,10 @@ public class ApplicationServiceImpl implements ApplicationService {
             resume = resumeRepository.findFirstByUserEmailOrderByUploadedAtDesc(seekerEmail).orElse(null);
         }
 
+        if (resume == null) {
+            throw new IllegalArgumentException("Complete profile and upload resume is mandatory to apply for a job.");
+        }
+
         int score = calculateAtsScore(job, resume);
 
         Application application = new Application();
@@ -113,7 +117,7 @@ public class ApplicationServiceImpl implements ApplicationService {
 
     private int calculateAtsScore(Job job, Resume resume) {
         if (resume == null || resume.getParsedText() == null || resume.getParsedText().trim().isEmpty()) {
-            return 50; // Default base score without parsed resume
+            return 0; // Default base score without parsed resume
         }
 
         String requirements = job.getRequirements();
@@ -133,8 +137,8 @@ public class ApplicationServiceImpl implements ApplicationService {
             }
         }
 
-        // Return a percentage matching score (at least 35% base, max 100%)
+        // Return a percentage matching score
         int pct = (matched * 100) / total;
-        return Math.max(35, Math.min(100, pct));
+        return Math.min(100, pct);
     }
 }
