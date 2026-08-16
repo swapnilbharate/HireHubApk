@@ -44,17 +44,7 @@ jobs:
 
       - name: Build APK (Assemble Debug)
         working-directory: ./frontend/android
-        run: |
-          ./gradlew assembleDebug --no-daemon > gradle_build.txt 2>&1 || true
-          cat gradle_build.txt
-
-      - name: Push log to repo
-        run: |
-          git config --global user.name "GitHub Action"
-          git config --global user.email "action@github.com"
-          git add -f frontend/android/gradle_build.txt
-          git commit -m "Upload build log" || true
-          git push origin HEAD:main || true
+        run: ./gradlew assembleDebug --no-daemon
 
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
