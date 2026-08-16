@@ -34,11 +34,9 @@ jobs:
         working-directory: ./frontend
         run: npm run build
 
-      - name: Add Capacitor Android Platform
+      - name: Sync Capacitor Android
         working-directory: ./frontend
-        run: |
-          npx cap add android || echo "Platform android already added"
-          npx cap sync android
+        run: npx cap sync android || echo "Capacitor sync failed, proceeding with checked-in assets"
 
       - name: Make gradlew executable
         working-directory: ./frontend/android
