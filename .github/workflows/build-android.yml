@@ -40,6 +40,10 @@ jobs:
           npx cap add android || echo "Platform android already added"
           npx cap sync android
 
+      - name: Make gradlew executable
+        working-directory: ./frontend/android
+        run: chmod +x gradlew
+
       - name: Build APK (Assemble Debug)
         working-directory: ./frontend/android
         run: ./gradlew assembleDebug --no-daemon
